@@ -643,6 +643,545 @@
                     "trusted": true
                 }
             ]
+        },
+        {
+            "timestamp": "2025-07-20 19:00:16",
+            "device_count": 24,
+            "untrusted_count": 15,
+            "devices": [
+                {
+                    "ip": "10.1.204.71",
+                    "mac": "Local-Machine",
+                    "hostname": "lulu",
+                    "name": "This Computer (lulu)",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.1",
+                    "mac": "3C:EC:EF:C2:20:B1",
+                    "hostname": "10.1.204.1",
+                    "name": "Router (10.1.204.1)",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.10",
+                    "mac": "42:12:8C:D9:FC:38",
+                    "hostname": "ali-s-s24-fe.reboot.internal",
+                    "name": "ali-s-s24-fe.reboot.internal",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.12",
+                    "mac": "56:E0:39:96:15:A6",
+                    "hostname": "iphone.reboot.internal",
+                    "name": "iPhone",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.19",
+                    "mac": "E6:13:8E:03:B9:80",
+                    "hostname": "ipad.reboot.internal",
+                    "name": "iPad",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.21",
+                    "mac": "82:F8:96:4E:17:4A",
+                    "hostname": "ipad.reboot.internal",
+                    "name": "ipad.reboot.internal",
+                    "trusted": true
+                },
+                {
+                    "ip": "192.168.56.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "192.168.56.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                },
+                {
+                    "ip": "224.0.0.2",
+                    "mac": "01:00:5E:00:00:02",
+                    "hostname": "all-routers.mcast.net",
+                    "name": "all-routers",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.22",
+                    "mac": "01:00:5E:00:00:16",
+                    "hostname": "igmp.mcast.net",
+                    "name": "igmp",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.251",
+                    "mac": "01:00:5E:00:00:FB",
+                    "hostname": "mdns.mcast.net",
+                    "name": "mdns",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.252",
+                    "mac": "01:00:5E:00:00:FC",
+                    "hostname": "224.0.0.252",
+                    "name": "224.0.0.252",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.102.18",
+                    "mac": "01:00:5E:7F:66:12",
+                    "hostname": "239.255.102.18",
+                    "name": "239.255.102.18",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.255.250",
+                    "mac": "01:00:5E:7F:FF:FA",
+                    "hostname": "239.255.255.250",
+                    "name": "239.255.255.250",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.11",
+                    "mac": "6E:B1:5A:3F:2D:C4",
+                    "hostname": "iphone.reboot.internal",
+                    "name": "iPhone",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.13",
+                    "mac": "C6:B2:C8:F7:10:5F",
+                    "hostname": "iphone.reboot.internal",
+                    "name": "iPhone",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.116",
+                    "mac": "B2:EB:23:4A:74:45",
+                    "hostname": "mac.reboot.internal",
+                    "name": "mac.reboot.internal",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "10.1.204.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                },
+                {
+                    "ip": "224.0.0.2",
+                    "mac": "01:00:5E:00:00:02",
+                    "hostname": "all-routers.mcast.net",
+                    "name": "all-routers",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.22",
+                    "mac": "01:00:5E:00:00:16",
+                    "hostname": "igmp.mcast.net",
+                    "name": "igmp",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.251",
+                    "mac": "01:00:5E:00:00:FB",
+                    "hostname": "mdns.mcast.net",
+                    "name": "mdns",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.252",
+                    "mac": "01:00:5E:00:00:FC",
+                    "hostname": "224.0.0.252",
+                    "name": "224.0.0.252",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.102.18",
+                    "mac": "01:00:5E:7F:66:12",
+                    "hostname": "239.255.102.18",
+                    "name": "239.255.102.18",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.255.250",
+                    "mac": "01:00:5E:7F:FF:FA",
+                    "hostname": "239.255.255.250",
+                    "name": "239.255.255.250",
+                    "trusted": false
+                },
+                {
+                    "ip": "255.255.255.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "255.255.255.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                }
+            ]
+        },
+        {
+            "timestamp": "2025-07-20 19:21:11",
+            "device_count": 21,
+            "untrusted_count": 15,
+            "devices": [
+                {
+                    "ip": "10.1.204.71",
+                    "mac": "Local-Machine",
+                    "hostname": "lulu",
+                    "name": "This Computer (lulu)",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.1",
+                    "mac": "3C:EC:EF:C2:20:B1",
+                    "hostname": "10.1.204.1",
+                    "name": "Router (10.1.204.1)",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.21",
+                    "mac": "82:F8:96:4E:17:4A",
+                    "hostname": "ipad.reboot.internal",
+                    "name": "ipad.reboot.internal",
+                    "trusted": true
+                },
+                {
+                    "ip": "192.168.56.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "192.168.56.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                },
+                {
+                    "ip": "224.0.0.2",
+                    "mac": "01:00:5E:00:00:02",
+                    "hostname": "all-routers.mcast.net",
+                    "name": "all-routers",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.22",
+                    "mac": "01:00:5E:00:00:16",
+                    "hostname": "igmp.mcast.net",
+                    "name": "igmp",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.251",
+                    "mac": "01:00:5E:00:00:FB",
+                    "hostname": "mdns.mcast.net",
+                    "name": "mdns",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.252",
+                    "mac": "01:00:5E:00:00:FC",
+                    "hostname": "224.0.0.252",
+                    "name": "224.0.0.252",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.102.18",
+                    "mac": "01:00:5E:7F:66:12",
+                    "hostname": "239.255.102.18",
+                    "name": "239.255.102.18",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.255.250",
+                    "mac": "01:00:5E:7F:FF:FA",
+                    "hostname": "239.255.255.250",
+                    "name": "239.255.255.250",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.10",
+                    "mac": "42:12:8C:D9:FC:38",
+                    "hostname": "ali-s-s24-fe.reboot.internal",
+                    "name": "ali-s-s24-fe.reboot.internal",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.16",
+                    "mac": "FA:C0:91:3A:C8:2B",
+                    "hostname": "10.1.204.16",
+                    "name": "10.1.204.16",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.19",
+                    "mac": "E6:13:8E:03:B9:80",
+                    "hostname": "ipad.reboot.internal",
+                    "name": "iPad",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.116",
+                    "mac": "B2:EB:23:4A:74:45",
+                    "hostname": "mac.reboot.internal",
+                    "name": "mac.reboot.internal",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "10.1.204.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                },
+                {
+                    "ip": "224.0.0.22",
+                    "mac": "01:00:5E:00:00:16",
+                    "hostname": "igmp.mcast.net",
+                    "name": "igmp",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.251",
+                    "mac": "01:00:5E:00:00:FB",
+                    "hostname": "mdns.mcast.net",
+                    "name": "mdns",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.252",
+                    "mac": "01:00:5E:00:00:FC",
+                    "hostname": "224.0.0.252",
+                    "name": "224.0.0.252",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.102.18",
+                    "mac": "01:00:5E:7F:66:12",
+                    "hostname": "239.255.102.18",
+                    "name": "239.255.102.18",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.255.250",
+                    "mac": "01:00:5E:7F:FF:FA",
+                    "hostname": "239.255.255.250",
+                    "name": "239.255.255.250",
+                    "trusted": false
+                },
+                {
+                    "ip": "255.255.255.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "255.255.255.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                }
+            ]
+        },
+        {
+            "timestamp": "2025-07-20 21:13:59",
+            "device_count": 25,
+            "untrusted_count": 20,
+            "devices": [
+                {
+                    "ip": "10.1.204.71",
+                    "mac": "Local-Machine",
+                    "hostname": "lulu",
+                    "name": "This Computer (lulu)",
+                    "trusted": true
+                },
+                {
+                    "ip": "10.1.204.1",
+                    "mac": "3C:EC:EF:C2:20:B1",
+                    "hostname": "10.1.204.1",
+                    "name": "Router (10.1.204.1)",
+                    "trusted": true
+                },
+                {
+                    "ip": "192.168.56.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "192.168.56.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                },
+                {
+                    "ip": "224.0.0.2",
+                    "mac": "01:00:5E:00:00:02",
+                    "hostname": "all-routers.mcast.net",
+                    "name": "all-routers",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.22",
+                    "mac": "01:00:5E:00:00:16",
+                    "hostname": "igmp.mcast.net",
+                    "name": "igmp",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.251",
+                    "mac": "01:00:5E:00:00:FB",
+                    "hostname": "mdns.mcast.net",
+                    "name": "mdns",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.252",
+                    "mac": "01:00:5E:00:00:FC",
+                    "hostname": "224.0.0.252",
+                    "name": "224.0.0.252",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.1.187",
+                    "mac": "01:00:5E:00:01:BB",
+                    "hostname": "224.0.1.187",
+                    "name": "224.0.1.187",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.102.18",
+                    "mac": "01:00:5E:7F:66:12",
+                    "hostname": "239.255.102.18",
+                    "name": "239.255.102.18",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.255.250",
+                    "mac": "01:00:5E:7F:FF:FA",
+                    "hostname": "239.255.255.250",
+                    "name": "239.255.255.250",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.10",
+                    "mac": "42:12:8C:D9:FC:38",
+                    "hostname": "ali-s-s24-fe.reboot.internal",
+                    "name": "ali-s-s24-fe.reboot.internal",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.12",
+                    "mac": "56:E0:39:96:15:A6",
+                    "hostname": "iphone.reboot.internal",
+                    "name": "iPhone",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.19",
+                    "mac": "E6:13:8E:03:B9:80",
+                    "hostname": "ipad.reboot.internal",
+                    "name": "iPad",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.85",
+                    "mac": "10:BD:3A:79:23:D1",
+                    "hostname": "laylas-air.reboot.internal",
+                    "name": "laylas-air",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.116",
+                    "mac": "B2:EB:23:4A:74:45",
+                    "hostname": "mac.reboot.internal",
+                    "name": "mac.reboot.internal",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.242",
+                    "mac": "9C:29:76:E3:30:BE",
+                    "hostname": "desktop-1b4dbh8.reboot.internal",
+                    "name": "desktop-1b4dbh8",
+                    "trusted": false
+                },
+                {
+                    "ip": "10.1.204.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "10.1.204.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                },
+                {
+                    "ip": "224.0.0.2",
+                    "mac": "01:00:5E:00:00:02",
+                    "hostname": "all-routers.mcast.net",
+                    "name": "all-routers",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.22",
+                    "mac": "01:00:5E:00:00:16",
+                    "hostname": "igmp.mcast.net",
+                    "name": "igmp",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.251",
+                    "mac": "01:00:5E:00:00:FB",
+                    "hostname": "mdns.mcast.net",
+                    "name": "mdns",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.0.252",
+                    "mac": "01:00:5E:00:00:FC",
+                    "hostname": "224.0.0.252",
+                    "name": "224.0.0.252",
+                    "trusted": false
+                },
+                {
+                    "ip": "224.0.1.187",
+                    "mac": "01:00:5E:00:01:BB",
+                    "hostname": "224.0.1.187",
+                    "name": "224.0.1.187",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.102.18",
+                    "mac": "01:00:5E:7F:66:12",
+                    "hostname": "239.255.102.18",
+                    "name": "239.255.102.18",
+                    "trusted": false
+                },
+                {
+                    "ip": "239.255.255.250",
+                    "mac": "01:00:5E:7F:FF:FA",
+                    "hostname": "239.255.255.250",
+                    "name": "239.255.255.250",
+                    "trusted": false
+                },
+                {
+                    "ip": "255.255.255.255",
+                    "mac": "FF:FF:FF:FF:FF:FF",
+                    "hostname": "255.255.255.255",
+                    "name": "192-168-56-255.rev.bb.zain.com",
+                    "trusted": true
+                }
+            ]
+        },
+        {
+            "timestamp": "2025-07-20 21:24:21",
+            "device_count": 1,
+            "untrusted_count": 0,
+            "devices": [
+                {
+                    "ip": "10.1.204.71",
+                    "mac": "Local Machine",
+                    "hostname": "localhost",
+                    "name": "This Computer (Error during scan)",
+                    "trusted": true
+                }
+            ]
+        },
+        {
+            "timestamp": "2025-07-20 21:24:39",
+            "device_count": 1,
+            "untrusted_count": 0,
+            "devices": [
+                {
+                    "ip": "10.1.204.71",
+                    "mac": "Local Machine",
+                    "hostname": "localhost",
+                    "name": "This Computer (Error during scan)",
+                    "trusted": true
+                }
+            ]
         }
     ]
 }

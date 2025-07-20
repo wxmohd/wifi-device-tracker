@@ -68,6 +68,20 @@
             "hostname": "10.1.204.16",
             "device_name": "10.1.204.16",
             "first_seen": "2025-07-20 18:45:50"
+        },
+        {
+            "mac": "56:E0:39:96:15:A6",
+            "ip": "10.1.204.12",
+            "hostname": "iphone.reboot.internal",
+            "device_name": "iPhone",
+            "first_seen": "2025-07-20 18:57:33"
+        },
+        {
+            "mac": "E6:13:8E:03:B9:80",
+            "ip": "10.1.204.19",
+            "hostname": "ipad.reboot.internal",
+            "device_name": "iPad",
+            "first_seen": "2025-07-20 18:57:33"
         }
     ]
 }

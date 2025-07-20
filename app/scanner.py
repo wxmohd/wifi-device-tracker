@@ -5,6 +5,7 @@ Handles scanning the local network for devices using ARP or Nmap
 """
 import os
 import json
+import sys
 import time
 import socket
 import ipaddress
@@ -233,9 +234,16 @@ class NetworkScanner:
     def _scan_with_nmap(self, subnet, timeout=20):
         """Scan network using python-nmap with timeout"""
         try:
+            print(f"Starting nmap scan on subnet {subnet} with timeout {timeout}s")
+            print("This may take a few moments...")
+            sys.stdout.flush()  # Force output to be displayed immediately
+            
             nm = nmap.PortScanner()
-            # Add timeout to nmap scan and use more aggressive scanning
-            nm.scan(hosts=subnet, arguments=f'-sn -PE -PA21,22,23,80,443,3389 --host-timeout {timeout}s')
+            # Use faster scan with fewer ports and reduced timeout
+            # Use a simpler scan that's more reliable
+            print("Executing nmap scan command...")
+            sys.stdout.flush()  # Force output to be displayed immediately
+            nm.scan(hosts=subnet, arguments=f'-sn --host-timeout {timeout}s')
             
             devices = []
             for host in nm.all_hosts():

@@ -4,6 +4,7 @@ Wi-Fi Device Tracker / Rogue Device Detector
 Main Flask application entry point
 """
 import os
+import sys
 import threading
 import time
 from datetime import datetime
@@ -89,10 +90,29 @@ def scan_network_with_progress():
     """Background thread function to scan network with progress updates"""
     global scan_status
     
+    print("\n==== Scan Thread Started ====\n")
+    print(f"Thread ID: {threading.current_thread().ident}")
+    sys.stdout.flush()
+    
     try:
-        # Update status to indicate scanning has started
-        scan_status['is_scanning'] = True
-        scan_status['progress'] = 0
+        # Initialize scanner
+        print("Initializing scanner...")
+        sys.stdout.flush()
+        scan_status['status_message'] = 'Initializing scanner...'
+        scan_status['progress'] = 10
+        
+        try:
+            scanner = AutoTrustScanner()
+            print("Scanner object created successfully")
+            sys.stdout.flush()
+            
+            scanner.load_trusted_devices()
+            print("Trusted devices loaded successfully")
+            sys.stdout.flush()
+        except Exception as e:
+            print(f"ERROR initializing scanner: {str(e)}")
+            sys.stdout.flush()
+            raise
         scan_status['status_message'] = 'Initializing scan...'
         scan_status['devices_found'] = 0
         
@@ -112,30 +132,50 @@ def scan_network_with_progress():
         max_scan_time = 45  # seconds - increased for more thorough scanning
         
         # Create a progress update thread
-        def update_progress():
-            # Update progress from 31% to 89% during scan
-            progress = 31
-            while scan_status['is_scanning'] and progress < 90 and time.time() - start_time < max_scan_time:
-                scan_status['progress'] = progress
-                progress += 1
-                time.sleep(0.3)  # Update more frequently (every 0.3 seconds)
-                
-            # Ensure we reach at least 89% even if scan completes quickly
-            if scan_status['progress'] < 89 and scan_status['is_scanning']:
-                for p in range(scan_status['progress'], 90):
-                    scan_status['progress'] = p
-                    time.sleep(0.1)
+        def update_progress_thread(scan_status):
+            """Thread to update progress incrementally while scanning"""
+            start = 31
+            end = 89
+            step = 2
+            delay = 1.0
+            
+            print("Progress update thread started")
+            
+            while scan_status['is_scanning'] and scan_status['progress'] < end:
+                time.sleep(delay)
+                if scan_status['progress'] < start:
+                    scan_status['progress'] = start
+                else:
+                    # Slow down progress updates as we get closer to the end
+                    scan_status['progress'] += step
+                    if scan_status['progress'] > end:
+                        scan_status['progress'] = end
+                    print(f"Progress updated to {scan_status['progress']}%")
+            
+            print("Progress update thread finished")
+            # Force progress to 90% when thread exits if still scanning
+            if scan_status['is_scanning'] and scan_status['progress'] < 90:
+                scan_status['progress'] = 90
+                print("Progress forced to 90% as thread exits")
         
         # Start progress update thread
-        progress_thread = threading.Thread(target=update_progress)
+        progress_thread = threading.Thread(target=update_progress_thread, args=(scan_status,))
         progress_thread.daemon = True
         progress_thread.start()
         
         try:
             # Run scan with timeout protection
             print("Starting network scan...")
+            print("This may take some time, please be patient...")
+            sys.stdout.flush()  # Force output to be displayed immediately
+            
+            # Add a timestamp to track scan duration
+            scan_start = time.time()
             devices = scanner.scan_network(timeout=max_scan_time)
-            print(f"Scan completed, found {len(devices)} devices")
+            scan_duration = time.time() - scan_start
+            
+            print(f"Scan completed in {scan_duration:.1f} seconds, found {len(devices)} devices")
+            sys.stdout.flush()  # Force output to be displayed immediately
             
             # Add at least the local device if no devices were found
             if not devices:
@@ -164,7 +204,7 @@ def scan_network_with_progress():
         
         # Process results
         scan_status['status_message'] = 'Processing scan results...'
-        scan_status['progress'] = 90
+        scan_status['progress'] = 92
         scan_status['devices_found'] = len(devices)
         
         # Print devices for debugging
@@ -179,12 +219,15 @@ def scan_network_with_progress():
         
         # Log results
         scan_status['status_message'] = 'Logging scan results...'
-        scan_status['progress'] = 90
+        scan_status['progress'] = 95
+        print("Logging scan results, progress at 95%")
         scanner.log_scan_results(devices)
         
-        # Complete
+        # Complete - ensure is_scanning is set to False BEFORE setting progress to 100%
         scan_status['status_message'] = 'Scan complete!'
-        scan_status['progress'] = 100
+        scan_status['is_scanning'] = False  # Set is_scanning to False FIRST
+        scan_status['progress'] = 100       # Then set progress to 100%
+        print("Scan complete, progress at 100%, is_scanning set to False")
         
         # Wait a moment before resetting status
         time.sleep(2)
@@ -195,8 +238,13 @@ def scan_network_with_progress():
         scan_status['progress'] = 100
     finally:
         # Always ensure scan status is properly reset
-        scan_status['progress'] = 100
+        # Set is_scanning to False FIRST, then set progress to 100%
         scan_status['is_scanning'] = False
+        scan_status['progress'] = 100
+        print("Scan thread finalized, is_scanning=False, progress=100%")
+        
+        # Force a small delay to ensure UI updates
+        time.sleep(0.5)
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -218,10 +266,16 @@ def scan():
     scan_status['status_message'] = 'Initializing scan...'
     scan_status['devices_found'] = 0
     
+    print("\n==== Starting Scan Thread ====\n")
+    sys.stdout.flush()
+    
     # Start scan in a background thread
     scan_thread = threading.Thread(target=scan_network_with_progress)
     scan_thread.daemon = True
     scan_thread.start()
+    
+    print(f"Scan thread started: {scan_thread.name}, is_alive: {scan_thread.is_alive()}")
+    sys.stdout.flush()
     
     # Return JSON if it's an AJAX request
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
