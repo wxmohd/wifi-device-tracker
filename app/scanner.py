@@ -14,6 +14,7 @@ import re
 from datetime import datetime
 import netifaces
 import nmap
+from mac_vendor_lookup import MacLookup
 
 class NetworkScanner:
     """Class to handle network scanning operations"""
@@ -23,6 +24,7 @@ class NetworkScanner:
         self.scan_method = "nmap"  # Default scan method
         self.trusted_devices = []
         self.seen_devices = []
+        self.mac_lookup = MacLookup()
         self.load_trusted_devices()
         self.load_seen_devices()
         
@@ -81,12 +83,26 @@ class NetworkScanner:
         normalized_mac = self._normalize_mac(mac)
         return any(d.get('mac') == normalized_mac for d in self.seen_devices)
     
-    def add_seen_device(self, mac, ip, hostname=""):
+    def add_seen_device(self, mac, ip, hostname="", device_name=""):
         """Add a device to the seen devices list"""
         normalized_mac = self._normalize_mac(mac)
         
         # Don't add if already in the list
         if self.is_device_seen_before(normalized_mac):
+            # Update existing device information if needed
+            for device in self.seen_devices:
+                if device.get('mac') == normalized_mac:
+                    # Update IP and hostname if they've changed
+                    device['ip'] = ip
+                    if hostname and hostname != device.get('hostname', ''):
+                        device['hostname'] = hostname
+                    # Update device name if provided and better than existing
+                    if device_name and (not device.get('device_name') or device.get('device_name') == "Unknown Device"):
+                        device['device_name'] = device_name
+                    # Update last seen timestamp
+                    device['last_seen'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    self.save_seen_devices()
+                    break
             return
         
         # Add to seen devices with timestamp
@@ -94,7 +110,9 @@ class NetworkScanner:
             'mac': normalized_mac,
             'ip': ip,
             'hostname': hostname,
-            'first_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'device_name': device_name,
+            'first_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'last_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         })
         
         # Save the updated list
@@ -232,17 +250,8 @@ class NetworkScanner:
                     # Check if device is trusted
                     is_trusted = any(d.get('mac') == self._normalize_mac(mac) for d in self.trusted_devices)
                     
-                    # Get device name from trusted devices if available
-                    device_name = hostname or "Unknown Device"
-                    for d in self.trusted_devices:
-                        if d.get('mac') == self._normalize_mac(mac):
-                            device_name = d.get('name', hostname or "Unknown Device")
-                            break
-                    
-                    # Try to determine device type based on MAC prefix
-                    vendor = self._get_vendor_from_mac(mac)
-                    if vendor and (not device_name or device_name == "Unknown Device"):
-                        device_name = f"{vendor} Device"
+                    # Get the best possible device name using all available information
+                    device_name = self.get_device_name(mac, ip, hostname)
                     
                     devices.append({
                         'ip': ip,
@@ -386,13 +395,8 @@ class NetworkScanner:
                     if mac:
                         is_trusted = any(d.get('mac') == self._normalize_mac(mac) for d in self.trusted_devices)
                     
-                    # Get device name from trusted devices if available
-                    device_name = hostname or ip_str
-                    if mac:
-                        for d in self.trusted_devices:
-                            if d.get('mac') == self._normalize_mac(mac):
-                                device_name = d.get('name', hostname or ip_str)
-                                break
+                    # Get the best possible device name using all available information
+                    device_name = self.get_device_name(mac, ip_str, hostname)
                     
                     devices.append({
                         'ip': ip_str,
@@ -454,13 +458,8 @@ class NetworkScanner:
                         if mac:
                             is_trusted = any(d.get('mac') == self._normalize_mac(mac) for d in self.trusted_devices)
                         
-                        # Get device name from trusted devices if available
-                        device_name = hostname or ip
-                        if mac:
-                            for d in self.trusted_devices:
-                                if d.get('mac') == self._normalize_mac(mac):
-                                    device_name = d.get('name', hostname or ip)
-                                    break
+                        # Get the best possible device name using all available information
+                        device_name = self.get_device_name(mac, ip, hostname)
                         
                         devices.append({
                             'ip': ip,
@@ -528,7 +527,10 @@ class NetworkScanner:
         return None
     
     def _get_hostname(self, ip):
-        """Try to resolve hostname from IP"""
+        """Try to resolve hostname from IP using multiple methods"""
+        hostname = ""
+        
+        # Method 1: Standard socket resolution
         try:
             hostname = socket.getfqdn(ip)
             if hostname != ip:
@@ -536,7 +538,126 @@ class NetworkScanner:
         except Exception:
             pass
         
-        return ""
+        # Method 2: Try reverse DNS lookup
+        try:
+            hostname = socket.gethostbyaddr(ip)[0]
+            if hostname and hostname != ip:
+                return hostname
+        except Exception:
+            pass
+            
+        # Method 3: Try to get NetBIOS name (Windows only)
+        if platform.system().lower() == 'windows':
+            try:
+                output = subprocess.check_output(f'nbtstat -A {ip}', shell=True, stderr=subprocess.DEVNULL).decode('utf-8', errors='ignore')
+                for line in output.splitlines():
+                    if '<00>' in line and 'UNIQUE' in line:
+                        parts = line.split()
+                        if len(parts) >= 1:
+                            netbios_name = parts[0].strip()
+                            if netbios_name and netbios_name != ip:
+                                return netbios_name
+            except Exception:
+                pass
+        
+        return hostname or ""
+        
+    def _get_vendor_from_mac(self, mac):
+        """Get vendor information from MAC address using mac-vendor-lookup"""
+        if not mac or mac == "Unknown" or mac == "Local-Machine" or mac == "Gateway-Router":
+            return ""
+            
+        try:
+            normalized_mac = self._normalize_mac(mac)
+            vendor = self.mac_lookup.lookup(normalized_mac)
+            return vendor
+        except Exception as e:
+            print(f"Error looking up MAC vendor: {e}")
+            return ""
+            
+    def get_device_name(self, mac, ip, hostname="", current_name=None):
+        """Get the best possible device name using all available information"""
+        # Start with current name if provided
+        device_name = current_name if current_name else ""
+        
+        # Check if this is a trusted device with a custom name (highest priority)
+        if mac and mac != "Unknown":
+            normalized_mac = self._normalize_mac(mac)
+            for d in self.trusted_devices:
+                if d.get('mac') == normalized_mac:
+                    return d.get('name', device_name or hostname or ip)
+        
+        # Special cases for local machine and gateway
+        if mac == "Local-Machine" or (hostname and hostname == socket.gethostname()):
+            return f"This Computer ({socket.gethostname()})"
+        if mac == "Gateway-Router" or (ip and ip == self._get_default_gateway()):
+            return "Network Router"
+        
+        # Check if the device has been seen before and has a name stored
+        if mac and mac != "Unknown":
+            normalized_mac = self._normalize_mac(mac)
+            for d in self.seen_devices:
+                if d.get('mac') == normalized_mac and d.get('device_name') and d.get('device_name') != "Unknown Device":
+                    return d.get('device_name')
+        
+        # Check if hostname contains useful device information (e.g., "Hassan-iPhone" or "Samsung-TV")
+        if hostname and hostname != ip:
+            # Clean up hostname - remove domain suffixes and common prefixes
+            clean_hostname = hostname.split('.')[0].lower()
+            
+            # Look for common device patterns in hostname
+            device_patterns = {
+                'iphone': "iPhone",
+                'ipad': "iPad",
+                'macbook': "MacBook",
+                'android': "Android Device",
+                'galaxy': "Samsung Galaxy",
+                'pixel': "Google Pixel",
+                'huawei': "Huawei Device",
+                'oneplus': "OnePlus Phone",
+                'xiaomi': "Xiaomi Device",
+                'tv': "Smart TV",
+                'roku': "Roku Device",
+                'chromecast': "Chromecast",
+                'firetv': "Fire TV",
+                'echo': "Amazon Echo",
+                'alexa': "Amazon Alexa",
+                'homepod': "Apple HomePod",
+                'xbox': "Xbox",
+                'playstation': "PlayStation",
+                'nintendo': "Nintendo Switch",
+                'printer': "Printer"
+            }
+            
+            # Check if hostname contains any of these patterns
+            for pattern, name in device_patterns.items():
+                if pattern in clean_hostname:
+                    # Try to extract a personal name if present (e.g., "hassan-iphone" -> "Hassan's iPhone")
+                    parts = clean_hostname.split('-')
+                    if len(parts) > 1:
+                        for part in parts:
+                            if pattern in part:
+                                continue
+                            if len(part) > 2:  # Avoid short meaningless parts
+                                person_name = part.capitalize()
+                                return f"{person_name}'s {name}"
+                    return name
+            
+            # If no pattern matched but hostname looks meaningful, use it
+            if clean_hostname and clean_hostname != "unknown" and len(clean_hostname) > 3:
+                return hostname.split('.')[0]  # Return without domain suffix
+            
+        # Try to get vendor information as a fallback
+        vendor = self._get_vendor_from_mac(mac)
+        if vendor:
+            if not device_name or device_name == ip or "Unknown" in device_name:
+                return f"{vendor} Device"
+            # Add vendor info to the device name if not already included
+            elif vendor not in device_name:
+                return f"{device_name} ({vendor})"
+                
+        # Final fallback
+        return device_name or hostname or ip
     
     def log_scan_results(self, devices, logs_file="app/logs.json"):
         """Log scan results to JSON file"""

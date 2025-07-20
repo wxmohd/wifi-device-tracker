@@ -111,6 +111,26 @@ def scan_network_with_progress():
         start_time = time.time()
         max_scan_time = 45  # seconds - increased for more thorough scanning
         
+        # Create a progress update thread
+        def update_progress():
+            # Update progress from 31% to 89% during scan
+            progress = 31
+            while scan_status['is_scanning'] and progress < 90 and time.time() - start_time < max_scan_time:
+                scan_status['progress'] = progress
+                progress += 1
+                time.sleep(0.3)  # Update more frequently (every 0.3 seconds)
+                
+            # Ensure we reach at least 89% even if scan completes quickly
+            if scan_status['progress'] < 89 and scan_status['is_scanning']:
+                for p in range(scan_status['progress'], 90):
+                    scan_status['progress'] = p
+                    time.sleep(0.1)
+        
+        # Start progress update thread
+        progress_thread = threading.Thread(target=update_progress)
+        progress_thread.daemon = True
+        progress_thread.start()
+        
         try:
             # Run scan with timeout protection
             print("Starting network scan...")
@@ -144,7 +164,7 @@ def scan_network_with_progress():
         
         # Process results
         scan_status['status_message'] = 'Processing scan results...'
-        scan_status['progress'] = 70
+        scan_status['progress'] = 90
         scan_status['devices_found'] = len(devices)
         
         # Print devices for debugging

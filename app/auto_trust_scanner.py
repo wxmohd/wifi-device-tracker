@@ -49,7 +49,7 @@ class AutoTrustScanner(NetworkScanner):
         normalized_mac = self._normalize_mac(mac)
         return any(d.get('mac') == normalized_mac for d in self.seen_devices)
     
-    def add_seen_device(self, mac, ip, hostname=""):
+    def add_seen_device(self, mac, ip, hostname="", device_name=""):
         """Add a device to the seen devices list"""
         normalized_mac = self._normalize_mac(mac)
         
@@ -57,11 +57,18 @@ class AutoTrustScanner(NetworkScanner):
         if self.is_device_seen_before(normalized_mac):
             return
         
+        # Try to get vendor information for better device identification
+        if not device_name or device_name == hostname or "Unknown" in device_name:
+            vendor = self._get_vendor_from_mac(mac)
+            if vendor:
+                device_name = f"{vendor} Device"
+        
         # Add to seen devices with timestamp
         self.seen_devices.append({
             'mac': normalized_mac,
             'ip': ip,
             'hostname': hostname,
+            'device_name': device_name,
             'first_seen': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         })
         
@@ -82,8 +89,8 @@ class AutoTrustScanner(NetworkScanner):
                 if self.is_device_seen_before(mac):
                     device['trusted'] = True
                 else:
-                    # Add new device to seen devices list
-                    self.add_seen_device(mac, device.get('ip', ''), device.get('hostname', ''))
+                    # Add new device to seen devices list with name information
+                    self.add_seen_device(mac, device.get('ip', ''), device.get('hostname', ''), device.get('name', ''))
         
         return devices
     
@@ -101,8 +108,8 @@ class AutoTrustScanner(NetworkScanner):
                 if self.is_device_seen_before(mac):
                     device['trusted'] = True
                 else:
-                    # Add new device to seen devices list
-                    self.add_seen_device(mac, device.get('ip', ''), device.get('hostname', ''))
+                    # Add new device to seen devices list with name information
+                    self.add_seen_device(mac, device.get('ip', ''), device.get('hostname', ''), device.get('name', ''))
         
         return devices
 

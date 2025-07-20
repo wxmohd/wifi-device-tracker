@@ -35,6 +35,39 @@
             "ip": "192.168.100.149",
             "hostname": "lulu",
             "first_seen": "2025-07-18 13:17:55"
+        },
+        {
+            "mac": "3C:EC:EF:C2:20:B1",
+            "ip": "10.1.204.1",
+            "hostname": "Gateway",
+            "first_seen": "2025-07-20 18:23:13"
+        },
+        {
+            "mac": "E2:E1:8A:A8:3B:6A",
+            "ip": "10.1.204.5",
+            "hostname": "",
+            "first_seen": "2025-07-20 18:23:13"
+        },
+        {
+            "mac": "42:12:8C:D9:FC:38",
+            "ip": "10.1.204.10",
+            "hostname": "ali-s-s24-fe.reboot.internal",
+            "device_name": "ali-s-s24-fe.reboot.internal",
+            "first_seen": "2025-07-20 18:35:39"
+        },
+        {
+            "mac": "82:F8:96:4E:17:4A",
+            "ip": "10.1.204.21",
+            "hostname": "ipad.reboot.internal",
+            "device_name": "ipad.reboot.internal",
+            "first_seen": "2025-07-20 18:35:39"
+        },
+        {
+            "mac": "FA:C0:91:3A:C8:2B",
+            "ip": "10.1.204.16",
+            "hostname": "10.1.204.16",
+            "device_name": "10.1.204.16",
+            "first_seen": "2025-07-20 18:45:50"
         }
     ]
 }
