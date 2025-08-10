@@ -1,9 +1,3 @@
 {
-    "trusted_devices": [
-        {
-            "mac": "FF:FF:FF:FF:FF:FF",
-            "name": "192-168-56-255.rev.bb.zain.com",
-            "added_on": "2025-07-20 14:44:33"
-        }
-    ]
+    "trusted_devices": []
 }

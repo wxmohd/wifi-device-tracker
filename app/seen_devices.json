@@ -82,6 +82,20 @@
             "hostname": "ipad.reboot.internal",
             "device_name": "iPad",
             "first_seen": "2025-07-20 18:57:33"
+        },
+        {
+            "mac": "0A:7A:8F:32:CE:01",
+            "ip": "10.1.206.14",
+            "hostname": "macbookpro.reboot.internal",
+            "device_name": "MacBook",
+            "first_seen": "2025-08-04 19:16:49"
+        },
+        {
+            "mac": "82:B1:8C:DE:73:5D",
+            "ip": "10.1.206.14",
+            "hostname": "ipad.reboot.internal",
+            "device_name": "iPad",
+            "first_seen": "2025-08-10 20:24:29"
         }
     ]
 }

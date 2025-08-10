@@ -7,171 +7,186 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     <meta http-equiv="refresh" content="300"> <!-- Auto-refresh every 5 minutes -->
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <i class="fas fa-wifi me-2"></i>Wi-Fi Device Tracker
+                <div class="brand-icon">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <span class="brand-text">Wi-Fi Tracker</span>
             </a>
-            <span class="navbar-text text-white">
-                <i class="fas fa-shield-alt me-1"></i> Rogue Device Detector
-            </span>
+            <div class="navbar-actions ms-auto d-flex align-items-center">
+                <span class="badge security-badge me-3">
+                    <i class="fas fa-shield-alt me-1"></i> Security Monitor
+                </span>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    <div class="app-container">
+        <div class="py-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show custom-alert" role="alert">
+                            <div class="alert-icon"><i class="fas fa-info-circle"></i></div>
+                            <div class="alert-content">{{ message }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Network Status</h5>
+        <div class="dashboard-grid mb-4">
+            <div class="dashboard-card network-status-card">
+                <div class="card-header">
+                    <div class="header-icon">
+                        <i class="fas fa-signal-stream"></i>
                     </div>
-                    <div class="card-body">
-                        <p><strong>Local IP:</strong> {{ local_ip }}</p>
-                        <p><strong>Subnet:</strong> {{ subnet }}</p>
-                        <p><strong>Last Scan:</strong> {{ last_scan_time }}</p>
-                        <p><strong>Devices Found:</strong> {{ devices|length }}</p>
-                        <p><strong>Untrusted Devices:</strong> 
-                            <span class="{% if untrusted_count > 0 %}text-danger{% else %}text-success{% endif %}">
-                                {{ untrusted_count }}
-                            </span>
-                        </p>
-                        <div id="scan-controls" class="mt-3">
-                            <form action="/scan" method="post" id="scan-form">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-primary" id="scan-button">
-                                    <i class="fas fa-sync-alt me-2"></i>Scan Now
-                                </button>
-                            </form>
-                            
-                            <!-- Scan Progress Indicator (hidden by default) -->
-                            <div id="scan-progress-container" class="mt-3 d-none">
-                                <div class="progress">
-                                    <div id="scan-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
-                                         role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-                                    </div>
+                    <h5>Network Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <div class="status-icon"><i class="fas fa-network-wired"></i></div>
+                            <div class="status-details">
+                                <div class="status-label">Local IP</div>
+                                <div class="status-value">{{ local_ip }}</div>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-icon"><i class="fas fa-project-diagram"></i></div>
+                            <div class="status-details">
+                                <div class="status-label">Subnet</div>
+                                <div class="status-value">{{ subnet }}</div>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-icon"><i class="fas fa-clock"></i></div>
+                            <div class="status-details">
+                                <div class="status-label">Last Scan</div>
+                                <div class="status-value">{{ last_scan_time }}</div>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-icon"><i class="fas fa-laptop-house"></i></div>
+                            <div class="status-details">
+                                <div class="status-label">Devices Found</div>
+                                <div class="status-value">{{ devices|length }}</div>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-icon">
+                                <i class="fas fa-shield-virus {% if untrusted_count > 0 %}text-danger{% else %}text-success{% endif %}"></i>
+                            </div>
+                            <div class="status-details">
+                                <div class="status-label">Untrusted Devices</div>
+                                <div class="status-value {% if untrusted_count > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ untrusted_count }}
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mt-1">
-                                    <span class="small">0%</span>
-                                    <span id="progress-percentage" class="fw-bold">0%</span>
-                                    <span class="small">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="scan-controls" class="mt-4">
+                        <form action="/scan" method="post" id="scan-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-primary btn-scan" id="scan-button">
+                                <i class="fas fa-radar me-2"></i>Scan Network
+                            </button>
+                        </form>
+                        
+                        <!-- Scan Progress Indicator (hidden by default) -->
+                        <div id="scan-progress-container" class="mt-3 d-none">
+                            <div class="scan-status-box">
+                                <div class="scan-animation">
+                                    <i class="fas fa-wifi scan-pulse"></i>
                                 </div>
-                                <p id="scan-status-message" class="text-center mt-2 small">Initializing scan...</p>
-                                <p id="scan-devices-found" class="text-center mt-1 small d-none"><strong>Devices found: <span id="devices-count">0</span></strong></p>
+                                <h4 id="scan-status-message">Scanning network...</h4>
+                                <div id="scan-phases" class="scan-phases">
+                                    <div id="phase-init" class="scan-phase"><i class="fas fa-spinner fa-spin me-2"></i>Initializing scanner</div>
+                                    <div id="phase-detect" class="scan-phase"><i class="fas fa-search me-2"></i>Detecting devices</div>
+                                    <div id="phase-analyze" class="scan-phase"><i class="fas fa-sitemap me-2"></i>Analyzing connections</div>
+                                    <div id="phase-complete" class="scan-phase"><i class="fas fa-check-circle me-2"></i>Completing scan</div>
+                                </div>
+                                <p id="scan-devices-found" class="mt-2 mb-0 d-none"><strong>Devices found: <span id="devices-count">0</span></strong></p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Activity Summary</h5>
+            
+            <div class="dashboard-card activity-card">
+                <div class="card-header">
+                    <div class="header-icon">
+                        <i class="fas fa-chart-line"></i>
                     </div>
-                    <div class="card-body">
-                        <p><strong>Total Scans:</strong> {{ total_scans }}</p>
-                        <p><strong>Alerts (Last 24h):</strong> 
-                            <span class="{% if alerts_24h > 0 %}text-danger{% else %}text-success{% endif %}">
-                                {{ alerts_24h }}
-                            </span>
-                        </p>
-                        <p><strong>Alerts (Last 7d):</strong> 
-                            <span class="{% if alerts_7d > 0 %}text-danger{% else %}text-success{% endif %}">
-                                {{ alerts_7d }}
-                            </span>
-                        </p>
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
+                    <h5>Activity Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="activity-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon"><i class="fas fa-search-location"></i></div>
+                            <div class="stat-details">
+                                <div class="stat-value">{{ total_scans }}</div>
+                                <div class="stat-label">Total Scans</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon {% if alerts_24h > 0 %}alert-icon{% endif %}">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="stat-details">
+                                <div class="stat-value {% if alerts_24h > 0 %}text-danger{% endif %}">{{ alerts_24h }}</div>
+                                <div class="stat-label">Alerts (24h)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon {% if alerts_7d > 0 %}alert-icon{% endif %}">
+                                <i class="fas fa-calendar-exclamation"></i>
+                            </div>
+                            <div class="stat-details">
+                                <div class="stat-value {% if alerts_7d > 0 %}text-danger{% endif %}">{{ alerts_7d }}</div>
+                                <div class="stat-label">Alerts (7d)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="security-notice">
+                        <div class="notice-icon"><i class="fas fa-shield-check"></i></div>
+                        <div class="notice-text">
                             This tool is for ethical use only. Do not scan networks you don't own or have permission to scan.
                         </div>
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-laptop me-2"></i>Connected Devices</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>IP Address</th>
-                                <th>MAC Address</th>
-                                <th>Name</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for device in devices %}
-                            <tr class="{% if not device.trusted %}table-danger{% endif %}">
-                                <td>
-                                    {% if device.trusted %}
-                                        <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Trusted</span>
-                                    {% else %}
-                                        <span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>Unknown</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ device.ip }}</td>
-                                <td>{{ device.mac }}</td>
-                                <td>{{ device.name if device.name else device.hostname }}</td>
-                                <td>
-                                    {% if not device.trusted and device.mac != "Unknown" %}
-                                        <form action="/trust" method="post" class="d-inline">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <input type="hidden" name="mac" value="{{ device.mac }}">
-                                            <input type="hidden" name="name" value="{{ device.hostname if device.hostname else device.ip }}">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="fas fa-shield-alt me-1"></i>Trust
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                    
-                                    {% if device.trusted %}
-                                        <form action="/untrust" method="post" class="d-inline">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <input type="hidden" name="mac" value="{{ device.mac }}">
-                                            <button type="submit" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-times-circle me-1"></i>Untrust
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <div class="dashboard-card trusted-devices-card">
+            <div class="card-header">
+                <div class="header-icon">
+                    <i class="fas fa-shield-check"></i>
                 </div>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Trusted Devices</h5>
+                <h5>Trusted Devices</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-striped devices-table">
                         <thead>
                             <tr>
+                                <th>Device</th>
                                 <th>MAC Address</th>
-                                <th>Name</th>
                                 <th>Added On</th>
                                 <th>Actions</th>
                             </tr>
@@ -179,15 +194,22 @@
                         <tbody>
                             {% for device in trusted_devices %}
                             <tr>
-                                <td>{{ device.mac }}</td>
-                                <td>{{ device.name }}</td>
+                                <td>
+                                    <div class="device-name">
+                                        <div class="device-icon device-trusted">
+                                            <i class="fas fa-laptop-house"></i>
+                                        </div>
+                                        {{ device.name }}
+                                    </div>
+                                </td>
+                                <td><code>{{ device.mac }}</code></td>
                                 <td>{{ device.added_on }}</td>
                                 <td>
                                     <form action="/untrust" method="post" class="d-inline">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="mac" value="{{ device.mac }}">
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash me-1"></i>Remove
+                                        <button type="submit" class="btn btn-sm btn-warning rounded-pill">
+                                            <i class="fas fa-shield-xmark me-1"></i>Untrust
                                         </button>
                                     </form>
                                 </td>
@@ -196,58 +218,59 @@
                         </tbody>
                     </table>
                 </div>
-
-                <hr>
-
-                <h5 class="mb-3">Add New Trusted Device</h5>
-                <form action="/trust" method="post" class="row g-3">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="col-md-4">
-                        <label for="mac" class="form-label">MAC Address</label>
-                        <input type="text" class="form-control" id="mac" name="mac" placeholder="XX:XX:XX:XX:XX:XX" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="name" class="form-label">Device Name</label>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="My Device" required>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-plus-circle me-1"></i>Add Device
-                        </button>
-                    </div>
-                </form>
+                
+                <!-- Add device form removed as devices are now auto-trusted -->
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Scan Logs</h5>
+        <div class="dashboard-card logs-card">
+            <div class="card-header">
+                <div class="header-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <h5>Recent Scan Logs</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-striped devices-table">
                         <thead>
                             <tr>
                                 <th>Timestamp</th>
-                                <th>Devices Found</th>
+                                <th>Total Devices</th>
                                 <th>Untrusted Devices</th>
-                                <th>Details</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for log in recent_logs %}
-                            <tr class="{% if log.untrusted_count > 0 %}table-warning{% endif %}">
-                                <td>{{ log.timestamp }}</td>
-                                <td>{{ log.device_count }}</td>
+                            <tr>
+                                <td>
+                                    <div class="log-timestamp">
+                                        <i class="fas fa-calendar-day me-2"></i>
+                                        {{ log.timestamp }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">
+                                        <i class="fas fa-devices me-1"></i>
+                                        {{ log.device_count }}
+                                    </span>
+                                </td>
                                 <td>
                                     {% if log.untrusted_count > 0 %}
-                                        <span class="text-danger">{{ log.untrusted_count }}</span>
+                                        <span class="badge bg-danger rounded-pill">
+                                            <i class="fas fa-shield-exclamation me-1"></i>
+                                            {{ log.untrusted_count }}
+                                        </span>
                                     {% else %}
-                                        <span class="text-success">0</span>
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="fas fa-shield-check me-1"></i>
+                                            0
+                                        </span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#logModal{{ loop.index }}">
+                                    <button type="button" class="btn btn-sm btn-info rounded-pill" data-bs-toggle="modal" data-bs-target="#logModal{{ loop.index }}">
                                         <i class="fas fa-search me-1"></i>View
                                     </button>
                                 </td>
@@ -265,34 +288,70 @@
     <div class="modal fade" id="logModal{{ loop.index }}" tabindex="-1" aria-labelledby="logModalLabel{{ loop.index }}" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="logModalLabel{{ loop.index }}">Log Details - {{ log.timestamp }}</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header">
+                    <div class="modal-title-wrapper">
+                        <div class="modal-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h5 class="modal-title" id="logModalLabel{{ loop.index }}">Scan Log - {{ log.timestamp }}</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="log-summary mb-4">
+                        <div class="log-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-devices"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ log.device_count }}</div>
+                                <div class="stat-label">Total Devices</div>
+                            </div>
+                        </div>
+                        <div class="log-stat">
+                            <div class="stat-icon {% if log.untrusted_count > 0 %}stat-danger{% else %}stat-success{% endif %}">
+                                <i class="fas fa-{% if log.untrusted_count > 0 %}shield-exclamation{% else %}shield-check{% endif %}"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value {% if log.untrusted_count > 0 %}text-danger{% else %}text-success{% endif %}">{{ log.untrusted_count }}</div>
+                                <div class="stat-label">Untrusted Devices</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3">Detected Devices</h6>
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped devices-table">
                             <thead>
                                 <tr>
                                     <th>Status</th>
+                                    <th>Device</th>
                                     <th>IP Address</th>
                                     <th>MAC Address</th>
-                                    <th>Name</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for device in log.devices %}
-                                <tr class="{% if not device.trusted %}table-danger{% endif %}">
+                                <tr>
                                     <td>
-                                        {% if device.trusted %}
-                                            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Trusted</span>
-                                        {% else %}
-                                            <span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>Unknown</span>
-                                        {% endif %}
+                                        <span class="badge {% if device.trusted %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                            {% if device.trusted %}
+                                                <i class="fas fa-shield-check me-1"></i>Trusted
+                                            {% else %}
+                                                <i class="fas fa-shield-exclamation me-1"></i>Untrusted
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="device-name">
+                                            <div class="device-icon {% if device.trusted %}device-trusted{% else %}device-untrusted{% endif %}">
+                                                <i class="fas fa-{% if 'phone' in device.name|lower %}mobile{% elif 'tv' in device.name|lower %}tv{% elif 'tablet' in device.name|lower %}tablet{% elif 'laptop' in device.name|lower %}laptop{% else %}desktop{% endif %}"></i>
+                                            </div>
+                                            {{ device.name if device.name else device.hostname }}
+                                        </div>
                                     </td>
                                     <td>{{ device.ip }}</td>
-                                    <td>{{ device.mac }}</td>
-                                    <td>{{ device.name if device.name else device.hostname }}</td>
+                                    <td><code>{{ device.mac }}</code></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -300,7 +359,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -315,10 +376,49 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Scan Progress JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use default (light)
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            htmlElement.setAttribute('data-theme', savedTheme);
+            
+            // Update button icon based on current theme
+            updateThemeIcon(savedTheme);
+            
+            // Toggle theme when button is clicked
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                // Apply the new theme
+                htmlElement.setAttribute('data-theme', newTheme);
+                
+                // Save the theme preference
+                localStorage.setItem('theme', newTheme);
+                
+                // Update button icon
+                updateThemeIcon(newTheme);
+            });
+            
+            // Function to update the theme toggle icon
+            function updateThemeIcon(theme) {
+                if (theme === 'dark') {
+                    document.querySelector('.fa-sun').style.opacity = '1';
+                    document.querySelector('.fa-sun').style.transform = 'rotate(0deg)';
+                    document.querySelector('.fa-moon').style.opacity = '0';
+                    document.querySelector('.fa-moon').style.transform = 'rotate(100deg)';
+                } else {
+                    document.querySelector('.fa-sun').style.opacity = '0';
+                    document.querySelector('.fa-sun').style.transform = 'rotate(-100deg)';
+                    document.querySelector('.fa-moon').style.opacity = '1';
+                    document.querySelector('.fa-moon').style.transform = 'rotate(0deg)';
+                }
+            }
+            
             const scanForm = document.getElementById('scan-form');
             const scanButton = document.getElementById('scan-button');
             const progressContainer = document.getElementById('scan-progress-container');
@@ -381,158 +481,159 @@
                 progressContainer.classList.remove('d-none');
                 scanButton.disabled = true;
                 
-                // Reset progress tracking variables
-                lastServerProgress = 0;
-                simulatedProgress = 0;
+                // Get references to phase elements
+                const phaseInit = document.getElementById('phase-init');
+                const phaseDetect = document.getElementById('phase-detect');
+                const phaseAnalyze = document.getElementById('phase-analyze');
+                const phaseComplete = document.getElementById('phase-complete');
                 
-                // Clear any existing intervals and animations
+                // Reset all phases
+                document.querySelectorAll('.scan-phase').forEach(phase => {
+                    phase.classList.remove('active', 'completed');
+                });
+                
+                // Clear any existing intervals
                 if (scanInterval) {
                     clearInterval(scanInterval);
                 }
-                if (progressAnimationId) {
-                    cancelAnimationFrame(progressAnimationId);
-                    progressAnimationId = null;
-                }
                 
-                // Add additional animation class for continuous movement
-                progressBar.classList.add('progress-bar-animated');
+                // Start with the first phase active
+                phaseInit.classList.add('active');
+                phaseInit.querySelector('i').classList.add('fa-spin');
                 
-                // Poll for scan status every 500ms
-                scanInterval = setInterval(checkScanStatus, 500);
+                // Poll for scan status more frequently (250ms)
+                scanInterval = setInterval(checkScanStatus, 250);
                 
                 // Immediate check to show current status
                 checkScanStatus();
             }
             
-            // Track the last progress value we received from the server
-            let lastServerProgress = 0;
-            // Track our simulated progress value
-            let simulatedProgress = 0;
-            // Animation frame ID for progress animation
-            let progressAnimationId = null;
-            // Reference to the progress percentage display
-            const progressPercentage = document.getElementById('progress-percentage');
+            // Track the current scan phase
+            let currentPhase = 0;
+            const phases = ['init', 'detect', 'analyze', 'complete'];
             
-            function animateProgress() {
-                // If we're still scanning but not at the target progress yet
-                if (simulatedProgress < lastServerProgress) {
-                    // Increment by small amounts for smooth animation
-                    simulatedProgress += 0.5;
+            function updateScanPhase(progress) {
+                // Determine which phase we should be in based on progress
+                let newPhase;
+                if (progress < 30) newPhase = 0;
+                else if (progress < 60) newPhase = 1;
+                else if (progress < 90) newPhase = 2;
+                else newPhase = 3;
+                
+                // If we've moved to a new phase
+                if (newPhase > currentPhase) {
+                    // Complete previous phases
+                    for (let i = 0; i <= currentPhase; i++) {
+                        const phaseElement = document.getElementById(`phase-${phases[i]}`);
+                        phaseElement.classList.remove('active');
+                        phaseElement.classList.add('completed');
+                        phaseElement.querySelector('i').classList.remove('fa-spin', 'fa-circle-notch');
+                        phaseElement.querySelector('i').classList.add('fa-check-circle');
+                    }
                     
-                    // Update the visual progress bar
-                    progressBar.style.width = simulatedProgress + '%';
-                    progressBar.setAttribute('aria-valuenow', Math.floor(simulatedProgress));
+                    // Activate new phase
+                    const newPhaseElement = document.getElementById(`phase-${phases[newPhase]}`);
+                    newPhaseElement.classList.add('active');
+                    newPhaseElement.querySelector('i').classList.add('fa-spin');
                     
-                    // Update the percentage text
-                    progressPercentage.textContent = Math.floor(simulatedProgress) + '%';
-                    
-                    // Continue the animation
-                    progressAnimationId = requestAnimationFrame(animateProgress);
+                    // Update current phase
+                    currentPhase = newPhase;
                 }
             }
+            
+            // Track consecutive identical progress values to detect stuck scans
+            let lastProgress = 0;
+            let stuckCounter = 0;
+            let maxStuckCount = 10; // After this many identical progress values, consider scan stuck
             
             function checkScanStatus() {
                 fetch('/scan_status')
                     .then(response => response.json())
                     .then(data => {
-                        // Store the server's progress value
-                        lastServerProgress = data.progress;
+                        console.log('Scan status:', data);
                         
-                        // If scanning is in progress, ensure our animation is running
-                        if (data.is_scanning && lastServerProgress > simulatedProgress) {
-                            // Cancel any existing animation
-                            if (progressAnimationId) {
-                                cancelAnimationFrame(progressAnimationId);
+                        // Check if scan is stuck at the same progress
+                        if (data.progress === lastProgress && data.is_scanning) {
+                            stuckCounter++;
+                            console.log(`Progress stuck at ${data.progress}% for ${stuckCounter} checks`);
+                            
+                            // If stuck for too long, force refresh
+                            if (stuckCounter >= maxStuckCount) {
+                                console.log('Scan appears stuck, forcing refresh');
+                                window.location.reload();
+                                return;
                             }
-                            // Start a new animation to the target progress
-                            progressAnimationId = requestAnimationFrame(animateProgress);
+                        } else {
+                            // Reset counter if progress changed
+                            stuckCounter = 0;
+                            lastProgress = data.progress;
                         }
                         
-                        // Update status message
-                        statusMessage.textContent = data.status_message;
+                        // Update the scan phase based on progress
+                        updateScanPhase(data.progress);
                         
-                        // Update devices found
-                        if (data.devices_found > 0) {
+                        // Update status message if provided
+                        if (data.status_message) {
+                            statusMessage.textContent = data.status_message;
+                        }
+                        
+                        // Update devices found count if available
+                        if (data.devices_found !== undefined && data.devices_found > 0) {
                             devicesFoundContainer.classList.remove('d-none');
                             devicesCount.textContent = data.devices_found;
                         }
                         
-                        // Show progress container if a scan is in progress
-                        if (data.is_scanning) {
-                            progressContainer.classList.remove('d-none');
-                            scanButton.disabled = true;
-                        }
-                        
-                        // If scan is complete (progress 100% and not scanning)
-                        if (data.progress >= 100 && !data.is_scanning) {
-                            // Clear the interval and animation
+                        // If scan is complete, stop polling and refresh the page after a delay
+                        if (!data.is_scanning && data.progress >= 100) {
                             clearInterval(scanInterval);
-                            if (progressAnimationId) {
-                                cancelAnimationFrame(progressAnimationId);
-                                progressAnimationId = null;
-                            }
+                            scanInterval = null;
                             
-                            // Set the final progress to 100%
-                            simulatedProgress = 100;
-                            progressBar.style.width = '100%';
-                            progressBar.setAttribute('aria-valuenow', 100);
-                            progressPercentage.textContent = '100%';
+                            // Complete all phases
+                            phases.forEach((phase, index) => {
+                                const phaseElement = document.getElementById(`phase-${phase}`);
+                                phaseElement.classList.remove('active');
+                                phaseElement.classList.add('completed');
+                                phaseElement.querySelector('i').classList.remove('fa-spin', 'fa-circle-notch');
+                                phaseElement.querySelector('i').classList.add('fa-check-circle');
+                            });
                             
-                            // Show completion indicator
-                            progressBar.classList.remove('progress-bar-animated');
-                            progressBar.classList.add('bg-success');
+                            // Update status message
+                            statusMessage.textContent = 'Scan complete!';
                             
-                            // Only add success alert if it doesn't exist yet
-                            if (!document.querySelector('.alert-success')) {
-                                // Create success indicator
-                                const successAlert = document.createElement('div');
-                                successAlert.className = 'alert alert-success mt-3';
-                                successAlert.innerHTML = `
-                                    <i class="fas fa-check-circle me-2"></i>
-                                    <strong>Scan Complete!</strong> Found ${data.devices_found} devices. 
-                                    <button type="button" class="btn btn-sm btn-success ms-3" onclick="window.location.reload()">
-                                        <i class="fas fa-sync-alt me-1"></i>Refresh Page
-                                    </button>
-                                `;
-                                
-                                // Add the success alert after the progress bar
-                                progressContainer.appendChild(successAlert);
-                                
-                                // Auto-refresh after 2 seconds to show the latest devices
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 2000);
-                            }
-                            
-                            // Enable the scan button again
+                            // Show the results without refreshing
                             scanButton.disabled = false;
+                            
+                            // Hide the scan progress container
+                            document.getElementById('scan-progress-container').classList.add('d-none');
+                            
+                            // Add a success message
+                            const successAlert = document.createElement('div');
+                            successAlert.className = 'alert alert-success mt-3';
+                            successAlert.innerHTML = `
+                                <i class="fas fa-check-circle me-2"></i>
+                                Scan complete! <a href="#" onclick="window.location.reload(); return false;">Refresh</a> to see results.
+                            `;
+                            document.getElementById('scan-controls').appendChild(successAlert);
                         }
                         
                         // If scan is no longer in progress but not at 100%
                         if (!data.is_scanning && data.progress < 100) {
                             clearInterval(scanInterval);
-                            if (progressAnimationId) {
-                                cancelAnimationFrame(progressAnimationId);
-                                progressAnimationId = null;
-                            }
+                            scanInterval = null;
                             scanButton.disabled = false;
                             
                             // Show error if progress isn't 100%
                             statusMessage.textContent = 'Scan failed or was interrupted. Please try again.';
-                            progressBar.classList.remove('progress-bar-animated');
-                            progressBar.classList.add('bg-danger');
+                            document.querySelectorAll('.scan-phase').forEach(phase => {
+                                phase.classList.remove('active', 'completed');
+                            });
                         }
                     })
                     .catch(error => {
                         console.error('Error checking scan status:', error);
                         clearInterval(scanInterval);
-                        if (progressAnimationId) {
-                            cancelAnimationFrame(progressAnimationId);
-                            progressAnimationId = null;
-                        }
+                        scanInterval = null;
                         statusMessage.textContent = 'Error checking scan status. Please try again.';
-                        progressBar.classList.remove('progress-bar-animated');
-                        progressBar.classList.add('bg-danger');
                         scanButton.disabled = false;
                     });
             }
@@ -544,6 +645,10 @@
                     if (data.is_scanning) {
                         // If a scan is in progress, start the polling
                         startProgressPolling();
+                    } else {
+                        // Make sure scan status is reset if a previous scan was completed
+                        scanButton.disabled = false;
+                        document.getElementById('scan-progress-container').classList.add('d-none');
                     }
                 })
                 .catch(error => {

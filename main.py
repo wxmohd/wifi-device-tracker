@@ -22,7 +22,7 @@ csrf = CSRFProtect(app)
 # Initialize network scanner with auto-trust capability
 scanner = AutoTrustScanner()
 
-# Global variables for scan status and results
+# Global variables
 scan_status = {
     'is_scanning': False,
     'progress': 0,
@@ -30,6 +30,9 @@ scan_status = {
     'devices_found': 0,
     'last_scan_devices': []  # Store the most recent scan results
 }
+
+# Global event to signal scan thread to stop
+scan_stop_event = threading.Event()
 
 @app.route('/')
 def index():
@@ -87,169 +90,191 @@ def index():
     )
 
 def scan_network_with_progress():
-    """Background thread function to scan network with progress updates"""
-    global scan_status
+    """Run network scan in a background thread and update progress"""
+    global scan_status, scan_stop_event
     
     print("\n==== Scan Thread Started ====\n")
     print(f"Thread ID: {threading.current_thread().ident}")
     sys.stdout.flush()
     
-    try:
-        # Initialize scanner
-        print("Initializing scanner...")
-        sys.stdout.flush()
-        scan_status['status_message'] = 'Initializing scanner...'
-        scan_status['progress'] = 10
-        
+    # Reset stop event
+    scan_stop_event.clear()
+    
+    # Create an event to signal when scanning is complete
+    scan_complete_event = threading.Event()
+    
+    # Define the progress update thread function
+    def update_progress_thread():
+        """Thread to update progress incrementally while scanning"""
         try:
-            scanner = AutoTrustScanner()
-            print("Scanner object created successfully")
+            # Define scan phases with faster progression
+            phases = [
+                {"start": 10, "end": 30, "step": 5, "delay": 0.3, "message": "Initializing scanner"},
+                {"start": 30, "end": 60, "step": 5, "delay": 0.2, "message": "Detecting devices"},
+                {"start": 60, "end": 90, "step": 5, "delay": 0.2, "message": "Analyzing connections"}
+            ]
+            
+            print("Progress update thread started - faster version")
             sys.stdout.flush()
             
-            scanner.load_trusted_devices()
-            print("Trusted devices loaded successfully")
-            sys.stdout.flush()
-        except Exception as e:
-            print(f"ERROR initializing scanner: {str(e)}")
-            sys.stdout.flush()
-            raise
-        scan_status['status_message'] = 'Initializing scan...'
-        scan_status['devices_found'] = 0
-        
-        # Get local IP and subnet
-        scan_status['status_message'] = 'Detecting network information...'
-        scan_status['progress'] = 10
-        local_ip, subnet = scanner.get_local_ip_and_subnet()
-        print(f"Scanning network: {subnet} (local IP: {local_ip})")
-        time.sleep(0.5)  # Small delay to show progress
-        
-        # Start scanning with timeout protection
-        scan_status['status_message'] = 'Scanning network for devices...'
-        scan_status['progress'] = 30
-        
-        # Set a maximum scan time (45 seconds)
-        start_time = time.time()
-        max_scan_time = 45  # seconds - increased for more thorough scanning
-        
-        # Create a progress update thread
-        def update_progress_thread(scan_status):
-            """Thread to update progress incrementally while scanning"""
-            start = 31
-            end = 89
-            step = 2
-            delay = 1.0
-            
-            print("Progress update thread started")
-            
-            while scan_status['is_scanning'] and scan_status['progress'] < end:
-                time.sleep(delay)
-                if scan_status['progress'] < start:
-                    scan_status['progress'] = start
-                else:
-                    # Slow down progress updates as we get closer to the end
-                    scan_status['progress'] += step
-                    if scan_status['progress'] > end:
-                        scan_status['progress'] = end
-                    print(f"Progress updated to {scan_status['progress']}%")
+            # Loop through each phase
+            for phase in phases:
+                # Skip if scan is already complete
+                if scan_complete_event.is_set() or not scan_status['is_scanning'] or scan_stop_event.is_set():
+                    break
+                    
+                # Update progress through this phase
+                for progress in range(phase['start'], phase['end'], phase['step']):
+                    scan_status['progress'] = progress
+                    scan_status['status_message'] = f"{phase['message']}"
+                    print(f"Progress updated to {progress}% - {phase['message']}")
+                    sys.stdout.flush()
+                    
+                    # Small delay between updates
+                    time.sleep(phase['delay'])
+                    
+                    # Break the loop if scan is complete
+                    if scan_complete_event.is_set() or not scan_status['is_scanning'] or scan_stop_event.is_set():
+                        break
             
             print("Progress update thread finished")
-            # Force progress to 90% when thread exits if still scanning
-            if scan_status['is_scanning'] and scan_status['progress'] < 90:
-                scan_status['progress'] = 90
-                print("Progress forced to 90% as thread exits")
+            sys.stdout.flush()
+        except Exception as e:
+            print(f"Error in progress update thread: {e}")
+            sys.stdout.flush()
+    
+    try:
+        # Initialize scanner
+        scanner = AutoTrustScanner()
+        scan_status['progress'] = 10
+        scan_status['status_message'] = 'Scanner initialized'
+        print("Scanner initialized, progress set to 10%")
+        sys.stdout.flush()
         
         # Start progress update thread
-        progress_thread = threading.Thread(target=update_progress_thread, args=(scan_status,))
+        progress_thread = threading.Thread(target=update_progress_thread)
         progress_thread.daemon = True
         progress_thread.start()
         
-        try:
-            # Run scan with timeout protection
-            print("Starting network scan...")
-            print("This may take some time, please be patient...")
-            sys.stdout.flush()  # Force output to be displayed immediately
-            
-            # Add a timestamp to track scan duration
-            scan_start = time.time()
-            devices = scanner.scan_network(timeout=max_scan_time)
-            scan_duration = time.time() - scan_start
-            
-            print(f"Scan completed in {scan_duration:.1f} seconds, found {len(devices)} devices")
-            sys.stdout.flush()  # Force output to be displayed immediately
-            
-            # Add at least the local device if no devices were found
-            if not devices:
-                print("No devices found, adding local machine")
-                devices = [{
-                    'ip': local_ip,
-                    'mac': 'Local Machine',
-                    'hostname': 'localhost',
-                    'name': 'This Computer',
-                    'trusted': True
-                }]
-                
-        except Exception as e:
-            print(f"Error during network scan: {e}")
-            devices = [{
-                'ip': local_ip,
-                'mac': 'Local Machine',
-                'hostname': 'localhost',
-                'name': 'This Computer (Error during scan)',
-                'trusted': True
-            }]
-            
+        # Start the scan
+        scan_status['status_message'] = 'Scanning network...'
+        scan_status['progress'] = 30
+        print("Starting network scan, progress set to 30%")
+        sys.stdout.flush()
+        
+        # Run the scan with a timeout
+        start_time = time.time()
+        max_scan_time = 60  # Maximum scan time in seconds
+        
+        # Run the scan
+        devices = scanner.scan_network()
+        
         # Check if scan took too long
         if time.time() - start_time > max_scan_time:
+            print("Scan took too long, showing partial results")
             scan_status['status_message'] = 'Scan took too long, showing partial results'
+        
+        # Signal that the scan is complete to stop the progress thread
+        scan_complete_event.set()
         
         # Process results
         scan_status['status_message'] = 'Processing scan results...'
-        scan_status['progress'] = 92
+        scan_status['progress'] = 85
+        print("Main thread setting progress to 85%")
+        sys.stdout.flush()
+        
         scan_status['devices_found'] = len(devices)
         
         # Print devices for debugging
         print(f"Devices found ({len(devices)}):")  
         for device in devices:
             print(f"  - {device.get('ip')} | {device.get('mac')} | {device.get('name')}")
+        sys.stdout.flush()
         
         # Store the devices in the scan_status for immediate display
-        scan_status['last_scan_devices'] = devices
-        
-        time.sleep(0.5)  # Small delay to show progress
+        try:
+            scan_status['last_scan_devices'] = devices
+            print("Successfully stored devices in scan_status")
+            sys.stdout.flush()
+            
+            # Update progress to 90%
+            scan_status['progress'] = 90
+            print("Progress updated to 90%")
+            sys.stdout.flush()
+        except Exception as e:
+            print(f"Error storing devices in scan_status: {e}")
+            sys.stdout.flush()
         
         # Log results
-        scan_status['status_message'] = 'Logging scan results...'
-        scan_status['progress'] = 95
-        print("Logging scan results, progress at 95%")
-        scanner.log_scan_results(devices)
+        try:
+            scan_status['status_message'] = 'Logging scan results...'
+            scan_status['progress'] = 95
+            print("Logging scan results, progress at 95%")
+            sys.stdout.flush()
+            scanner.log_scan_results(devices)
+            print("Successfully logged scan results")
+            sys.stdout.flush()
+        except Exception as e:
+            print(f"Error logging scan results: {e}")
+            sys.stdout.flush()
         
         # Complete - ensure is_scanning is set to False BEFORE setting progress to 100%
-        scan_status['status_message'] = 'Scan complete!'
-        scan_status['is_scanning'] = False  # Set is_scanning to False FIRST
-        scan_status['progress'] = 100       # Then set progress to 100%
-        print("Scan complete, progress at 100%, is_scanning set to False")
-        
-        # Wait a moment before resetting status
-        time.sleep(2)
+        try:
+            scan_status['status_message'] = 'Scan complete!'
+            sys.stdout.flush()
+            
+            # Set is_scanning to False first
+            scan_status['is_scanning'] = False
+            print("Set is_scanning to False")
+            sys.stdout.flush()
+            
+            # Set stop event to prevent any further scanning
+            scan_stop_event.set()
+            print("Set scan_stop_event to prevent auto-restart")
+            sys.stdout.flush()
+            
+            # Small delay to ensure status update is processed
+            time.sleep(0.2)
+            
+            # Then set progress to 100%
+            scan_status['progress'] = 100
+            print("Set progress to 100%")
+            sys.stdout.flush()
+            
+            print("Scan complete, progress at 100%, is_scanning set to False")
+            sys.stdout.flush()
+        except Exception as e:
+            print(f"Error updating final scan status: {e}")
+            sys.stdout.flush()
+            # Even if there's an error, make sure to set these values
+            scan_status['is_scanning'] = False
         
     except Exception as e:
         print(f"Exception in scan thread: {e}")
+        sys.stdout.flush()
         scan_status['status_message'] = f'Error during scan: {str(e)}'
-        scan_status['progress'] = 100
-    finally:
-        # Always ensure scan status is properly reset
-        # Set is_scanning to False FIRST, then set progress to 100%
         scan_status['is_scanning'] = False
         scan_status['progress'] = 100
-        print("Scan thread finalized, is_scanning=False, progress=100%")
-        
-        # Force a small delay to ensure UI updates
-        time.sleep(0.5)
+        print("Scan error handled, is_scanning=False, progress=100%")
+        sys.stdout.flush()
+    finally:
+        # Always ensure scan status is properly reset
+        if scan_status['is_scanning'] or scan_status['progress'] < 100:
+            print("Forcing scan completion in finally block")
+            sys.stdout.flush()
+            scan_status['is_scanning'] = False
+            scan_status['progress'] = 100
+            print("Scan thread finalized, is_scanning=False, progress=100%")
+            sys.stdout.flush()
 
 @app.route('/scan', methods=['POST'])
 def scan():
     """Perform a new network scan"""
-    global scan_status
+    global scan_status, scan_stop_event
+    
+    # Stop any existing scan that might be running
+    scan_stop_event.set()
+    time.sleep(0.5)  # Give any running scan thread time to stop
     
     # Don't start a new scan if one is already in progress
     if scan_status['is_scanning']:
@@ -265,6 +290,7 @@ def scan():
     scan_status['progress'] = 0
     scan_status['status_message'] = 'Initializing scan...'
     scan_status['devices_found'] = 0
+    scan_status['scan_start_time'] = time.time()  # Track when the scan started
     
     print("\n==== Starting Scan Thread ====\n")
     sys.stdout.flush()
@@ -290,13 +316,17 @@ def get_scan_status():
     """Return the current scan status as JSON"""
     global scan_status
     
-    # Create a copy of scan_status without the potentially large devices list
-    # to keep the response size small for status updates
-    status_copy = scan_status.copy()
-    if 'last_scan_devices' in status_copy:
-        del status_copy['last_scan_devices']
-        
-    return jsonify(status_copy)
+    # Check if scan has been running too long (more than 30 seconds)
+    if scan_status['is_scanning'] and 'scan_start_time' in scan_status:
+        elapsed_time = time.time() - scan_status['scan_start_time']
+        if elapsed_time > 30:  # Force completion after 30 seconds
+            print(f"Scan has been running for {elapsed_time:.1f} seconds, forcing completion")
+            scan_status['is_scanning'] = False
+            scan_status['progress'] = 100
+            scan_status['status_message'] = 'Scan completed (timeout)'
+            scan_stop_event.set()  # Signal any running scan threads to stop
+    
+    return jsonify(scan_status)
 
 @app.route('/trust', methods=['POST'])
 def trust_device():
